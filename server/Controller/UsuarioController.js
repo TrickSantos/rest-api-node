@@ -51,9 +51,15 @@ module.exports = {
 
         if(usuarioExistente){
             if(senha === usuarioExistente.senha){
-                return res.json({"message":"Login Ok!"})
+                return res.json({
+                    "message": "Login Ok!",
+                    "status": 1
+                })
             }else{
-                return res.json({"message":"Senha Incorreta!"})
+                return res.json({
+                    "message": "Senha Incorreta!",
+                    "status": 0
+                })
             }
         }else{
             return res.json({"message":"Usuario não existente"})
