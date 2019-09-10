@@ -62,7 +62,7 @@ module.exports = {
                 })
             }
         }else{
-            return res.json({"message":"Usuario não existente"})
+            return res.json({"message":"Usuario não existente","status":3})
         }
     }
 }
