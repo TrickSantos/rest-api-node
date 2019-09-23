@@ -1,5 +1,7 @@
 const axios = require('axios')
 const Usuario = require('../model/usuario')
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs')
 
 module.exports = {
     async index(req, res){
@@ -11,20 +13,19 @@ module.exports = {
         return res.json(usuarios)
     },
     async store(req, res){
+
         const {usuario} = req.body
-        const usuarioReq = req.body
+        const user = new Usuario(req.body)
 
         const usuarioExistente = await Usuario.findOne({usuario})
 
-        if(usuarioExistente){
-            console.log("Usuario já existe!");
-            
-            return res.json(usuarioExistente)
+        if(usuarioExistente){            
+            return res.status(400).json({ error: "Usuario já existe!"})
         }else{
-            const user = await Usuario.create(usuarioReq)
-            console.log(user);
+            await user.save()
+            console.log({user});
             
-            return res.json(user)
+            return res.json({user})
         }
     },
     async editar(req, res){
@@ -43,26 +44,32 @@ module.exports = {
 
         return res.json(usuario)
     },
-    async login(req, res){
+    async login(req, res, next){
 
         const {usuario, senha} = req.body
 
-        const usuarioExistente = await Usuario.findOne({usuario})
+        const user = await Usuario.findOne({usuario})
 
-        if(usuarioExistente){
-            if(senha === usuarioExistente.senha){
-                return res.json({
+        if(user){
+            if(await bcrypt.compare(senha, user.senha)){
+                const id = user._id
+                user.senha = undefined
+                var token = jwt.sign({id}, process.env.JWT_KEY,{expiresIn: "2d"})
+                return res.status(200).json({
                     "message": "Login Ok!",
-                    "status": 1
+                    "status": 1,
+                    auth: true,
+                    user,
+                    token
                 })
             }else{
-                return res.json({
+                return res.status(400).json({
                     "message": "Senha Incorreta!",
                     "status": 0
                 })
             }
         }else{
-            return res.json({"message":"Usuario não existente","status":3})
+            return res.status(400).json({"message":"Usuario não existente"})
         }
     }
 }

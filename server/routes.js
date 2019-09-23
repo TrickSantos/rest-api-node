@@ -2,9 +2,11 @@ const express = require('express')
 const UsuarioController = require('./Controller/UsuarioController')
 const CarrinhoController = require('./Controller/CarrinhoController')
 const CaixaController = require('./Controller/CaixaController')
+const auth = require('./middleware/auth')
 
 const routes = express.Router()
 
+routes.use(auth)
 routes.get('/usuario', UsuarioController.index)
 routes.get('/usuario/:id', UsuarioController.show)
 routes.post('/usuario', UsuarioController.store)
