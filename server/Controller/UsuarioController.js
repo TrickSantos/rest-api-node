@@ -20,7 +20,7 @@ module.exports = {
         const usuarioExistente = await Usuario.findOne({usuario})
 
         if(usuarioExistente){            
-            return res.status(400).json({ error: "Usuario já existe!"})
+            return res.status(400).json("Usuario já existe!")
         }else{
             await user.save()
             console.log({user});
@@ -55,21 +55,13 @@ module.exports = {
                 const id = user._id
                 user.senha = undefined
                 var token = jwt.sign({id}, process.env.JWT_KEY,{expiresIn: "2d"})
-                return res.status(200).json({
-                    "message": "Login Ok!",
-                    "status": 1,
-                    auth: true,
-                    user,
-                    token
-                })
+                res.header('authorization',token).send(token)
+                
             }else{
-                return res.status(400).json({
-                    "message": "Senha Incorreta!",
-                    "status": 0
-                })
+                return res.status(400).send("Senha invalida!")
             }
         }else{
-            return res.status(400).json({"message":"Usuario não existente"})
+            return res.status(400).send("Usuario não existente")
         }
     }
 }

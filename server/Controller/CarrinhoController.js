@@ -19,12 +19,11 @@ module.exports = {
         if (carrinhoExistente) {
             console.log("Carrinho já existe!");
 
-            return res.json(carrinhoExistente)
+            return res.status(400).json("Carrinho já Existente!")
         } else {
             const car = await Carrinho.create(carrinhoReq)
-            console.log(car);
 
-            return res.json(car)
+            return res.status(200).json("Cadastrado com Sucesso!")
         }
     },
     async editar(req, res) {
