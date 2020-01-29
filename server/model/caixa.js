@@ -20,8 +20,7 @@ const CaixaSchema = new Schema({
         required: true
     },
     formaPagamento:{
-        type: Schema.Types.ObjectId,
-        ref: 'FormaPagamento',
+        type: String,
         required: true
     }
 })

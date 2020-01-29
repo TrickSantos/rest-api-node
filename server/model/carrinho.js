@@ -10,25 +10,9 @@ const CarrinhoSchema = new Schema({
         required:true,
         default: true
     },
-    Estoque:[{
-        Produto:{
-            nome:{
-                type: String,
-                required: true
-            },
-            unidade:{
-                type: String,
-                required: true
-            },
-            valor:{
-                type: Number,
-                required: true
-            }
-        },
-        quantidade:{
-            type: Number,
-            required:true
-        }
+    estoque:[{
+        type: Schema.Types.ObjectId,
+        ref: 'Produto'
     }]
 },{
     timestamps:true

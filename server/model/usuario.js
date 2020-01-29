@@ -1,7 +1,5 @@
 const {Schema, model} = require("mongoose")
-const validator = require('validator')
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
+
 
 const UsuarioSchema = new Schema({
     nome:{
@@ -11,13 +9,11 @@ const UsuarioSchema = new Schema({
     usuario:{
         type: String,
         require: true,
-        unique: true,
-        lowercase: true
+        unique: true
     },
     senha:{
         type: String,
-        require: true,
-        minlength: 6
+        require: true
     },
     admin:{
         type: Boolean,
@@ -32,20 +28,20 @@ const UsuarioSchema = new Schema({
     timestamps:true
 })
 
-UsuarioSchema.pre('save', async function(next){
+/* UsuarioSchema.pre('save', async next => {
     const user = this
-    if (user.isModified('senha')){
+    if (user.isModified('senha')) {
         user.senha = await bcrypt.hash(user.senha, 8)
     }
     next()
-})
+}) */
 
-UsuarioSchema.methods = {
-    compareHash(hash){
+/* UsuarioSchema.methods = {
+    compareHash(hash) {
         return bcrypt.compare(hash, this.senha)
     },
-    generateAuthToken(){
-        return jwt.sign({_id: this._id}, process.env.JWT_KEY,{expiresIn: "2d"})
+    generateAuthToken() {
+        return jwt.sign({ _id: this._id }, process.env.JWT_KEY, { expiresIn: "2d" })
     }
-}
+} */
 module.exports = model('Usuario', UsuarioSchema)

@@ -1,67 +1,94 @@
-const axios = require('axios')
 const Usuario = require('../model/usuario')
-const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 module.exports = {
     async index(req, res){
-        
-        const usuarios = await Usuario.find()
-
-        console.log(usuarios);
-        
-        return res.json(usuarios)
+        try {
+            const usuarios = await Usuario.find()
+            
+            return res.status(200).send(usuarios)
+            
+        } catch (error) {
+            res.status(500).send(error)
+        }
     },
     async store(req, res){
-
-        const {usuario} = req.body
-        const user = new Usuario(req.body)
-
-        const usuarioExistente = await Usuario.findOne({usuario})
-
-        if(usuarioExistente){            
-            return res.status(400).json("Usuario já existe!")
-        }else{
-            await user.save()
-            console.log({user});
+        try {
+            const {usuario, senha, nome, admin} = req.body
+    
+            const usuarioExistente = await Usuario.findOne({usuario})
             
-            return res.json({user})
+            if(usuarioExistente){                
+                return res.status(201).send(usuarioExistente)
+            }else{
+                bcrypt.hash(senha, 10).then(
+                    hash =>{
+                        const user = new Usuario({
+                            nome,
+                            usuario,
+                            senha:hash,
+                            admin
+                        })
+                        user.save().then(()=>{
+                            return res.status(200).send(user)
+                        })
+                    }
+                )                
+            }            
+        } catch (error) {
+            res.status(500).send(error)
         }
     },
     async editar(req, res){
-        const usuario = await Usuario.findById(req.params.id)
-
-        usuario.set(req.body)
-
-        const usuarioAtualizado = await usuario.save()
-
-        console.log(usuarioAtualizado);
-
-        return res.json(usuarioAtualizado)
+        try {
+            const usuario = await Usuario.findById(req.params.id)
+    
+            usuario.set(req.body)
+    
+            const usuarioAtualizado = await usuario.save()
+    
+            return res.status(200).send(usuarioAtualizado)
+            
+        } catch (error) {
+            res.status(500).send(error)
+        }
     },
     async show(req, res){
-        const usuario = await Usuario.findById(req.params.id)
-
-        return res.json(usuario)
-    },
-    async login(req, res, next){
-
-        const {usuario, senha} = req.body
-
-        const user = await Usuario.findOne({usuario})
-
-        if(user){
-            if(await bcrypt.compare(senha, user.senha)){
-                const id = user._id
-                user.senha = undefined
-                var token = jwt.sign({id}, process.env.JWT_KEY,{expiresIn: "2d"})
-                res.header('authorization',token).send(token)
-                
-            }else{
-                return res.status(400).send("Senha invalida!")
-            }
-        }else{
-            return res.status(400).send("Usuario não existente")
+        try {
+            const usuario = await Usuario.findById(req.params.id)
+    
+            return res.json(usuario)
+        } catch (error) {
+            res.status(500).send(error)
         }
+    },
+    async login(req, res){
+        try {
+            const {usuario, senha} = req.body
+    
+            const usuarioExistente = await Usuario.findOne({usuario})
+    
+            if(usuarioExistente){
+                bcrypt.compare(senha, usuarioExistente.senha).then(
+                    valid =>{
+                        if(!valid){
+                            return res.status(401).json({error: new Error('Senha incorreta!')})
+                        }
+                        const token = jwt.sign(
+                            {userId: usuarioExistente._id},
+                            process.env.JWT_KEY,
+                            { expiresIn: "2d" }
+                        )                 
+                        return res.status(200).send({token})
+                    }
+                )
+            }else{
+                return res.status(404).send({ error: new Error('Usuario inexistente!') })
+            }            
+        } catch (error) {
+            res.status(500).send(error)
+        }
+
     }
 }
